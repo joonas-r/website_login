@@ -9,3 +9,12 @@ class LoginRequest(BaseModel):
     username: str
     password: str
     
+class ReadMatches(BaseModel):
+    match_id: int
+    playoff: bool
+    home_team_id: int
+    away_team_id: int
+    home_score: int
+    away_score: int
+    match_time: str
+    finished: bool
