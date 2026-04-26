@@ -3,10 +3,13 @@ from jose import jwt
 from datetime import datetime, timedelta
 from fastapi import Depends, Cookie, HTTPException
 from sqlalchemy.orm import Session
+import os
+from dotenv import load_dotenv, dotenv_values
+
 from database import get_db
 from models import User
 
-SECRET_KEY = "fgiu?4239345!"
+SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = "HS256"
 
 pwd_context = CryptContext(schemes=["bcrypt_sha256"], deprecated="auto")
