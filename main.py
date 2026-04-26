@@ -7,7 +7,7 @@ from database import engine, get_db, Base
 from models import User 
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser
+from schemas import CreateUser, LoginRequest
 
 app = FastAPI()
 
@@ -15,16 +15,17 @@ Base.metadata.create_all(engine)
 
 @app.post("/login")
 def login(
-    username: str,
-    password: str,
+#   username: str,
+#    password: str,
+    userdata: LoginRequest,
     response: Response,
     db: Session = Depends(get_db)
 ):
-    user = db.query(User).filter(User.username == username).first()
-    if not user or not verify_password(password, user.password_hash):
+    user = db.query(User).filter(User.username == userdata.username).first()
+    if not user or not verify_password(userdata.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token(user.id)
+    token = create_access_token(user.user_id)
 
     response.set_cookie(
         key="access_token",
