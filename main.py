@@ -129,7 +129,7 @@ def read_team_players(
     team_id: int,    
     db: Session = Depends(get_db)
 ):
-    players = crud.get_players_with_teams(team_id, db)
+    players = crud.get_players_with_teams(db, team_id)
 
     return [
         {
