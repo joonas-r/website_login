@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class CreateUser(BaseModel):
     username: str
@@ -27,3 +28,8 @@ class CreateMatch(BaseModel):
     away_score: int = 0
     match_time: str
     finished: bool = False
+
+class PatchMatchScore(BaseModel):
+    home_score: Optional[int]
+    away_score: Optional[int]
+    finished: Optional[bool]

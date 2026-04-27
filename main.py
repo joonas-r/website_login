@@ -4,10 +4,10 @@ from sqlmodel import SQLModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, get_db, Base
-from models import User 
+from models import User, Match
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore
 
 app = FastAPI()
 
@@ -71,3 +71,16 @@ def create_match_route(
     db: Session = Depends(get_db)
 ):
     return crud.create_match(db, match)
+
+
+@app.patch("/matches/{match_id}", response_model=ReadMatches)
+def patch_match_score(
+    match_id: int,
+    updates: PatchMatchScore,
+    db: Session = Depends(get_db),
+):
+    match = db.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    return crud.update_match_score(db, match, updates)

@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from auth import hash_password
 from models import User, Match
-from schemas import CreateMatch
+from schemas import CreateMatch, PatchMatchScore
 
 
 
@@ -28,3 +28,15 @@ def create_match(db: Session, match: CreateMatch) -> Match:
     db.commit()
     db.refresh(db_match)
     return db_match
+
+def update_match_score(
+    db: Session,
+    match: Match,
+    updates: PatchMatchScore,
+) -> Match:
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(match, field, value)
+
+    db.commit()
+    db.refresh(match)
+    return match
