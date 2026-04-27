@@ -7,7 +7,7 @@ from database import engine, get_db, Base
 from models import User, Match
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats
 
 app = FastAPI()
 
@@ -105,3 +105,9 @@ def delete_match(
         raise HTTPException(status_code=404, detail="Match not found")
 
     crud.delete_match(db, match)
+
+@app.get("/teams", response_model=list[ReadTeamStats])
+def read_matches(
+    db: Session = Depends(get_db)
+):
+    return crud.get_all_team_stats(db)
