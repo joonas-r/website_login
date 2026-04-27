@@ -1,13 +1,15 @@
 async function userLogin(){
-    var username = document.getElementById("username").value;
-    var password = document.getElementById("password").value;
+    var user = document.getElementById("username").value;
+    var pass = document.getElementById("password").value;
     
     // alert(username);
     
-    fetch("/login", {
+    fetch("/api/login", {
         method: "POST",
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+        	username: user, 
+        	password: pass }),
         headers: { "Content-Type": "application/json" },
-        credentials: "include",  // ← REQUIRED
+        credentials: "include"
     });
 }
