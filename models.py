@@ -1,4 +1,4 @@
-from sqlalchemy import String, Integer, Boolean
+from sqlalchemy import String, Integer, Boolean, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from database import Base
 
@@ -72,6 +72,11 @@ class Team(Base):
 
 class Player(Base):
     __tablename__ = "draft_players"
+
+    ### Constraint to make player + shirt number unique. Use if migrating to Alembic
+    # __table_args__ = (
+    #     UniqueConstraint("team_id", "shirt_number", name="uq_team_shirt"),
+    # )
 
     player_id: Mapped[int] = mapped_column(
         Integer, primary_key=True

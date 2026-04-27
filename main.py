@@ -7,7 +7,7 @@ from database import engine, get_db, Base
 from models import User, Match, Team
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats, ReadPlayerTeamInfo
 
 app = FastAPI()
 
@@ -123,3 +123,20 @@ def patch_team_stats(
         raise HTTPException(status_code=404, detail="Team not found")
 
     return crud.update_team_stats(db, team, updates)
+
+@app.get("/players/team/{team_id}", response_model=list[ReadPlayerTeamInfo])
+def read_team_players(
+    team_id: int,    
+    db: Session = Depends(get_db)
+):
+    players = crud.get_players_with_teams(team_id, db)
+
+    return [
+        {
+            "player_id": p.player_id,
+            "name": p.name,
+            "shirt_number": p.shirt_number,
+            "team_name": p.team.team_name if p.team else None,
+        }
+        for p in players
+    ]

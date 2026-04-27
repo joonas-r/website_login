@@ -52,3 +52,12 @@ class PatchTeamStats(BaseModel):
     games: int
     goals_for: int
     goals_against: int
+
+class ReadPlayerTeamInfo(BaseModel):
+    player_id: int
+    name: str
+    shirt_number: int
+    team_name: str
+
+    class Config:
+        from_attributes = True
