@@ -7,7 +7,7 @@ from database import engine, get_db, Base
 from models import User 
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch
 
 app = FastAPI()
 
@@ -64,3 +64,10 @@ def read_matches(
     db: Session = Depends(get_db)
 ):
     return crud.get_all_matches(db)
+
+@app.post("/matches")
+def create_match_route(
+    match: CreateMatch,
+    db: Session = Depends(get_db)
+):
+    return crud.create_match(db, match)
