@@ -69,6 +69,6 @@ def get_players_with_teams(
         .filter(
             Player.team_id == team
         )
-        .join(Team)
+        .join(Team, Player.team_id == Team.team_id)
         .all()
     )
