@@ -37,6 +37,7 @@ class PatchMatchScore(BaseModel):
 class ReadTeamStats(BaseModel):
     team_id: int
     team_name: str
+    group: str
     wins: int
     draws: int
     losses: int
@@ -44,3 +45,10 @@ class ReadTeamStats(BaseModel):
     goals_for: int
     goals_against: int
 
+class PatchTeamStats(BaseModel):
+    wins: int
+    draws: int
+    losses: int
+    games: int
+    goals_for: int
+    goals_against: int

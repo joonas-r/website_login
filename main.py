@@ -4,10 +4,10 @@ from sqlmodel import SQLModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, get_db, Base
-from models import User, Match
+from models import User, Match, Team
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats
 
 app = FastAPI()
 
@@ -107,7 +107,19 @@ def delete_match(
     crud.delete_match(db, match)
 
 @app.get("/teams", response_model=list[ReadTeamStats])
-def read_matches(
+def read_teams(
     db: Session = Depends(get_db)
 ):
     return crud.get_all_team_stats(db)
+
+@app.patch("/teams/{team_id}", response_model=ReadTeamStats)
+def patch_team_stats(
+    team_id: int,
+    updates: PatchTeamStats,
+    db: Session = Depends(get_db),
+):
+    team = db.get(Team, team_id)
+    if not team:
+        raise HTTPException(status_code=404, detail="Team not found")
+
+    return crud.update_team_stats(db, team, updates)

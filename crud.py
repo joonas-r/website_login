@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from auth import hash_password
 from models import User, Match, Team
-from schemas import CreateMatch, PatchMatchScore
+from schemas import CreateMatch, PatchMatchScore, PatchTeamStats
 
 
 
@@ -47,3 +47,15 @@ def delete_match(db: Session, match: Match) -> None:
 
 def get_all_team_stats(db: Session) -> list:
     return db.query(Team).all()
+
+def update_team_stats(
+    db: Session,
+    team: Team,
+    updates: PatchTeamStats
+) -> Team:
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(team, field, value)
+
+    db.commit()
+    db.refresh()
+    return team
