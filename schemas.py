@@ -33,3 +33,14 @@ class PatchMatchScore(BaseModel):
     home_score: Optional[int]
     away_score: Optional[int]
     finished: Optional[bool]
+
+class ReadTeamStats(BaseModel):
+    team_id: int
+    team_name: str
+    wins: int
+    draws: int
+    losses: int
+    games: int
+    goals_for: int
+    goals_against: int
+
