@@ -62,7 +62,7 @@ class ReadPlayerTeamInfo(BaseModel):
     class Config:
         from_attributes = True
 
-class ReadPlayerStats():
+class ReadPlayerStats(BaseModel):
     player_id: int
     name: str
     goals: int

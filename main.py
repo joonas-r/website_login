@@ -147,7 +147,7 @@ def read_player_stats(
     player_id: int,
     db: Session = Depends(get_db)
 ):
-    player_stats = crud.get_player_stats
+    player_stats = crud.get_player_stats(db, player_id)
     return {
             "player_id": player_stats.player_id,
             "name": player_stats.player.name,
