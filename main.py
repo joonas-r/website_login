@@ -7,7 +7,8 @@ from database import engine, get_db, Base
 from models import User, Match, Team
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats, ReadPlayerTeamInfo
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats, ReadPlayerTeamInfo, ReadPlayerStats
+
 
 app = FastAPI()
 
@@ -140,3 +141,17 @@ def read_team_players(
         }
         for p in players
     ]
+
+@app.get("/players/{player_id}/stats", response_model=ReadPlayerStats)
+def read_player_stats(
+    player_id: int,
+    db: Session = Depends(get_db)
+):
+    player_stats = crud.get_player_stats
+    return {
+            "player_id": player_stats.player_id,
+            "name": player_stats.name,
+            "goals": player_stats.goals,
+            "assists": player_stats.assists,
+            "penalty_min": player_stats.penalty_min
+    }

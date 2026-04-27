@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from auth import hash_password
-from models import User, Match, Team, Player
+from models import User, Match, Team, Player, PlayerStats
 from schemas import CreateMatch, PatchMatchScore, PatchTeamStats
 
 
@@ -61,8 +61,8 @@ def update_team_stats(
     return team
 
 def get_players_with_teams(
-        db: Session,
-        team: int 
+    db: Session,
+    team: int 
 ):
     return (
         db.query(Player)
@@ -72,3 +72,9 @@ def get_players_with_teams(
         .join(Team, Player.team_id == Team.team_id)
         .all()
     )
+
+def get_player_stats(
+    db: Session,
+    player: int
+):
+    return db.get(PlayerStats, player).join(Player, PlayerStats.player_id == Player.player_id)
