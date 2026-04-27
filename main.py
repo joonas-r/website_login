@@ -7,7 +7,7 @@ from database import engine, get_db, Base
 from models import User 
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest
+from schemas import CreateUser, LoginRequest, ReadMatches
 
 app = FastAPI()
 
@@ -57,3 +57,10 @@ def create_user_route(
         raise HTTPException(status_code=400, detail="Username already registered")
     crud.create_user(db, user.username, user.password)
     return {"message": "User created"}
+
+
+@app.get("/matches", response_model=list[ReadMatches])
+def read_matches(
+    db: Session = Depends(get_db)
+):
+    return crud.get_all_matches(db)
