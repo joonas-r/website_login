@@ -40,3 +40,8 @@ def update_match_score(
     db.commit()
     db.refresh(match)
     return match
+
+
+def delete_match(db: Session, match: Match) -> None:
+    db.delete(match)
+    db.commit()

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Response
+from fastapi import FastAPI, Depends, HTTPException, Response, APIRouter
 from sqlalchemy.orm import Session
 from sqlmodel import SQLModel
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,6 +10,14 @@ from auth import hash_password, verify_password, create_access_token, get_curren
 from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore
 
 app = FastAPI()
+
+# router = APIRouter(
+#     prefix="",
+#     dependencies=[Depends(get_current_user)],
+# )
+
+# app.include_router(router)
+
 
 Base.metadata.create_all(engine)
 
@@ -84,3 +92,16 @@ def patch_match_score(
         raise HTTPException(status_code=404, detail="Match not found")
 
     return crud.update_match_score(db, match, updates)
+
+
+@app.delete("/matches/{match_id}", status_code=204)
+def delete_match(
+    match_id: int,
+    db: Session = Depends(get_db),
+    # user: User = Depends(get_current_user),  # auth protection
+):
+    match = db.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    crud.delete_match(db, match)
