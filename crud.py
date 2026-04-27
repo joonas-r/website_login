@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from auth import hash_password
 from models import User, Match
+from schemas import CreateMatch
 
 
 
@@ -18,5 +19,12 @@ def create_user(db: Session, username: str, password: str):
     db.refresh(user)
     return user
 
-def get_all_matches(db: Session, skip: int = 0, limit: int = 100) -> list:
-    return db.query(Match).offset(skip).limit(limit).all()
+def get_all_matches(db: Session) -> list:
+    return db.query(Match).all()
+
+def create_match(db: Session, match: CreateMatch) -> Match:
+    db_match = Match(**match.model_dump())
+    db.add(db_match)
+    db.commit()
+    db.refresh(db_match)
+    return db_match
