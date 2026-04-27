@@ -77,4 +77,4 @@ def get_player_stats(
     db: Session,
     player: int
 ):
-    return db.get(PlayerStats, player).join(Player, PlayerStats.player_id == Player.player_id)
+    return db.get(PlayerStats, player)
