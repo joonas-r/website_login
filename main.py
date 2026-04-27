@@ -150,7 +150,7 @@ def read_player_stats(
     player_stats = crud.get_player_stats
     return {
             "player_id": player_stats.player_id,
-            "name": player_stats.name,
+            "name": player_stats.player.name,
             "goals": player_stats.goals,
             "assists": player_stats.assists,
             "penalty_min": player_stats.penalty_min
