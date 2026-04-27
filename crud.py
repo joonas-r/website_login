@@ -57,5 +57,5 @@ def update_team_stats(
         setattr(team, field, value)
 
     db.commit()
-    db.refresh()
+    db.refresh(team)
     return team
