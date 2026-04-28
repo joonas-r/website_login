@@ -57,7 +57,8 @@ def login(
         value=token,
         httponly=True,
 #        secure=True,     # HTTPS only
-        samesite="lax"
+        samesite="lax",
+        path="/"
     )
 
     return {"message": "Logged in"}
