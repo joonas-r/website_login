@@ -71,3 +71,8 @@ class ReadPlayerStats(BaseModel):
 
     class Config:
         from_attributes = True
+
+class PatchPlayerStatsDelta(BaseModel):
+    goals: Optional[int] = 0
+    assists: Optional[int] = 0
+    penalty_min: Optional[int] = 0

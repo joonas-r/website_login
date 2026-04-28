@@ -4,10 +4,10 @@ from sqlmodel import SQLModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, get_db, Base
-from models import User, Match, Team
+from models import User, Match, Team, PlayerStats
 import crud
 from auth import hash_password, verify_password, create_access_token, get_current_user
-from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats, ReadPlayerTeamInfo, ReadPlayerStats
+from schemas import CreateUser, LoginRequest, ReadMatches, CreateMatch, PatchMatchScore, ReadTeamStats, PatchTeamStats, ReadPlayerTeamInfo, ReadPlayerStats, PatchPlayerStatsDelta
 
 
 app = FastAPI()
@@ -155,3 +155,17 @@ def read_player_stats(
             "assists": player_stats.assists,
             "penalty_min": player_stats.penalty_min
     }
+
+
+@app.patch("/players/{player_id}/stats")
+def patch_player_stats(
+    player_id: int,
+    delta: PatchPlayerStatsDelta,
+    db: Session = Depends(get_db),
+):
+    stats = db.get(PlayerStats, player_id)
+    if not stats:
+        raise HTTPException(status_code=404, detail="Stats not found")
+
+    return crud.increment_player_stats(db, stats, delta)
+
