@@ -85,13 +85,13 @@ def create_user_route(
     return {"message": "User created"}
 
 
-@app.get("", response_model=list[ReadMatches])
+@app.get("/matches", response_model=list[ReadMatches])
 def read_matches(
     db: Session = Depends(get_db)
 ):
     return crud.get_all_matches(db)
 
-@app.post("/match")
+@app.post("/matches")
 def create_match_route(
     match: CreateMatch,
     db: Session = Depends(get_db),
@@ -100,7 +100,7 @@ def create_match_route(
     return crud.create_match(db, match)
 
 
-@app.patch("/match/{match_id}", response_model=ReadMatches)
+@app.patch("/matches/{match_id}", response_model=ReadMatches)
 def patch_match_score(
     match_id: int,
     updates: PatchMatchScore,
@@ -114,7 +114,7 @@ def patch_match_score(
     return crud.update_match_score(db, match, updates)
 
 
-@app.delete("/match/{match_id}", status_code=204)
+@app.delete("/matches/{match_id}", status_code=204)
 def delete_match(
     match_id: int,
     db: Session = Depends(get_db),
@@ -137,6 +137,7 @@ def patch_team_stats(
     team_id: int,
     updates: PatchTeamStats,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
 ):
     team = db.get(Team, team_id)
     if not team:
@@ -181,6 +182,7 @@ def patch_player_stats(
     player_id: int,
     updates: PatchPlayerStats,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
 ):
     stats = db.get(PlayerStats, player_id)
     if not stats:
