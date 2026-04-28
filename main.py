@@ -15,19 +15,19 @@ app = FastAPI()
 ## Routers
 
 matches_router = APIRouter(
-    prefix="/api/matches",
+    prefix="/matches",
     tags=["matches"],
     dependencies=[Depends(get_current_user)]
 )
 
 teams_router = APIRouter(
-    prefix="/api/teams",
+    prefix="/teams",
     tags=["teams"],
     dependencies=[Depends(get_current_user)]
 )
 
 players_router = APIRouter(
-    prefix="/api/players",
+    prefix="/players",
     tags=["players"],
     dependencies=[Depends(get_current_user)]
 )
@@ -174,7 +174,7 @@ def read_player_stats(
     }
 
 
-@players_router.patch("/players/{player_id}/stats")
+@players_router.patch("/{player_id}/stats")
 def patch_player_stats(
     player_id: int,
     updates: PatchPlayerStats,
