@@ -16,6 +16,7 @@
     table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
     th, td { border: 1px solid #ccc; padding: 0.4rem; text-align: left; }
     th { background: #f0f0f0; }
+    .danger { background: #c62828; color: white; border: none; }
   </style>
 </head>
 <body>
@@ -23,9 +24,7 @@
 <h1>Matches</h1>
 <div id="error" class="error"></div>
 
-
 <ul id="matches"></ul>
-
 
 <hr />
 
@@ -41,7 +40,6 @@
   </thead>
   <tbody></tbody>
 </table>
-
 
 <hr />
 
@@ -60,24 +58,20 @@
   </div>
 </form>
 
-
 <script>
   const matchesList = document.getElementById("matches");
   const teamsTableBody = document.querySelector("#teamsTable tbody");
   const errorDiv = document.getElementById("error");
   const form = document.getElementById("matchForm");
 
-
   async function loadMatches() {
     matchesList.innerHTML = "";
     errorDiv.textContent = "";
-
 
     try {
       const res = await fetch("/api/matches", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load matches");
       const matches = await res.json();
-
 
       matches.forEach(m => {
         const li = document.createElement("li");
@@ -91,6 +85,7 @@
               <input type="checkbox" id="finished-${m.match_id}" ${m.finished ? "checked" : ""} />
             </label>
             <button onclick="updateMatch(${m.match_id})">Update</button>
+            <button class="danger" onclick="deleteMatch(${m.match_id})">Delete</button>
           </div>
         `;
         matchesList.appendChild(li);
@@ -100,16 +95,13 @@
     }
   }
 
-
   async function loadTeams() {
     teamsTableBody.innerHTML = "";
-
 
     try {
       const res = await fetch("/api/teams", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load teams");
       const teams = await res.json();
-
 
       teams.forEach(t => {
         const tr = document.createElement("tr");
@@ -125,12 +117,10 @@
     }
   }
 
-
   async function updateMatch(matchId) {
     const homeScore = Number(document.getElementById(`home-${matchId}`).value);
     const awayScore = Number(document.getElementById(`away-${matchId}`).value);
     const finished = document.getElementById(`finished-${matchId}`).checked;
-
 
     try {
       const res = await fetch(`/api/matches/${matchId}`, {
@@ -140,8 +130,23 @@
         body: JSON.stringify({ home_score: homeScore, away_score: awayScore, finished })
       });
 
-
       if (!res.ok) throw new Error("Failed to update match");
+      loadMatches();
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  async function deleteMatch(matchId) {
+    if (!confirm("Delete this match? This cannot be undone.")) return;
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+
+
+      if (!res.ok) throw new Error("Failed to delete match");
       loadMatches();
     } catch (err) {
       errorDiv.textContent = err.message;
@@ -152,12 +157,10 @@
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-
     const homeTeamId = Number(homeTeam.value);
     const awayTeamId = Number(awayTeam.value);
     const matchTime = matchTimeInput.value;
     const playoff = playoffSelect.value === "true";
-
 
     try {
       const res = await fetch("/api/matches", {
@@ -172,7 +175,6 @@
         })
       });
 
-
       if (!res.ok) throw new Error("Failed to create match");
       form.reset();
       loadMatches();
@@ -181,16 +183,13 @@
     }
   });
 
-
   const homeTeam = document.getElementById("homeTeam");
   const awayTeam = document.getElementById("awayTeam");
   const matchTimeInput = document.getElementById("matchTime");
   const playoffSelect = document.getElementById("playoff");
 
-
   loadTeams();
   loadMatches();
 </script>
-
 
 </body>
