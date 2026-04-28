@@ -1,26 +1,88 @@
+
 <!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<script src="script.js"></script>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <title>Matches</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    ul { list-style: none; padding: 0; }
+    li { border: 1px solid #ccc; padding: 0.5rem; margin-bottom: 0.5rem; }
+    form { margin-top: 1rem; }
+    input, button { padding: 0.4rem; margin: 0.2rem 0; width: 100%; }
+    .error { color: red; margin: 0.5rem 0; }
+  </style>
 </head>
 <body>
-<table id="Matchtable">
-    <tr>
-        <th>ID</th>
-        <th>Playoff</th>
-        <th>Home ID</th>
-        <th>Home Team</th>
-        <th>Away ID</th>
-        <th>Away Team</th>
-        <th>Home Score</th>
-        <th>Away Score</th>
-        <th>Time</th>
-        <th>Is Finished?</th>
-    </tr>
-    <tr>
-        
-    </tr>
-</table>
+  <h1>Matches</h1>
+  <div id="error" class="error"></div>
+  <ul id="matches"></ul>
+  <hr />
+  <h2>Add new match</h2>
 
-</body>
+
+  <form id="matchForm">
+    <input type="number" id="homeTeam" placeholder="Home team ID" required />
+    <input type="number" id="awayTeam" placeholder="Away team ID" required />
+    <button type="submit">Create match</button>
+  </form>
+
+
+  <script>
+    const matchesList = document.getElementById("matches");
+    const errorDiv = document.getElementById("error");
+    const form = document.getElementById("matchForm");
+
+
+    async function loadMatches() {
+      errorDiv.textContent = "";
+      matchesList.innerHTML = "";
+
+
+      try {
+        const res = await fetch("/api/matches", { credentials: "include" });
+        if (!res.ok) throw new Error("Failed to load matches");
+
+
+        const matches = await res.json();
+
+
+        matches.forEach(m => {
+          const li = document.createElement("li");
+          li.textContent = `${m.home_team.team_name} ${m.home_score} – ${m.away_score} ${m.away_team.team_name}`;
+          matchesList.appendChild(li);
+        });
+      } catch (err) {
+        errorDiv.textContent = err.message;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorDiv.textContent = "";
+
+      const homeTeamId = Number(document.getElementById("homeTeam").value);
+      const awayTeamId = Number(document.getElementById("awayTeam").value);
+      try {
+        const res = await fetch("/api/matches", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({
+            home_team_id: homeTeamId,
+            away_team_id: awayTeamId
+          })
+        });
+        if (!res.ok) throw new Error("Failed to create match");
+
+        form.reset();
+        loadMatches();
+      } catch (err) {
+        errorDiv.textContent = err.message;
+      }
+    });
+    // Initial load
+    loadMatches();
+  </script>
+
