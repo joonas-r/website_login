@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <title>Matches</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; }
+    body { font-family: Arial, sans-serif; max-width: 900px; margin: 2rem auto; }
     h1, h2 { margin-bottom: 0.5rem; }
     ul { list-style: none; padding: 0; }
     li { border: 1px solid #ccc; padding: 0.5rem; margin-bottom: 0.5rem; }
@@ -13,14 +13,39 @@
     input, button, select { padding: 0.4rem; margin: 0.2rem 0; }
     .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .error { color: red; margin: 0.5rem 0; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem; text-align: left; }
+    th { background: #f0f0f0; }
   </style>
 </head>
 <body>
 
 <h1>Matches</h1>
 <div id="error" class="error"></div>
+
+
 <ul id="matches"></ul>
+
+
 <hr />
+
+
+<h2>Teams (reference)</h2>
+<table id="teamsTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Group</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+
+<hr />
+
+
 <h2>Add new match</h2>
 <form id="matchForm">
   <div class="row">
@@ -34,17 +59,26 @@
     <button type="submit">Create</button>
   </div>
 </form>
+
+
 <script>
   const matchesList = document.getElementById("matches");
+  const teamsTableBody = document.querySelector("#teamsTable tbody");
   const errorDiv = document.getElementById("error");
   const form = document.getElementById("matchForm");
+
+
   async function loadMatches() {
     matchesList.innerHTML = "";
     errorDiv.textContent = "";
+
+
     try {
       const res = await fetch("/api/matches", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to load matches");
       const matches = await res.json();
+
+
       matches.forEach(m => {
         const li = document.createElement("li");
         li.innerHTML = `
@@ -65,33 +99,66 @@
       errorDiv.textContent = err.message;
     }
   }
+
+
+  async function loadTeams() {
+    teamsTableBody.innerHTML = "";
+
+
+    try {
+      const res = await fetch("/api/teams", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load teams");
+      const teams = await res.json();
+
+
+      teams.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.team_id}</td>
+          <td>${t.team_name}</td>
+          <td>${t.group ?? ""}</td>
+        `;
+        teamsTableBody.appendChild(tr);
+      });
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+
   async function updateMatch(matchId) {
     const homeScore = Number(document.getElementById(`home-${matchId}`).value);
     const awayScore = Number(document.getElementById(`away-${matchId}`).value);
     const finished = document.getElementById(`finished-${matchId}`).checked;
+
+
     try {
       const res = await fetch(`/api/matches/${matchId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({
-          home_score: homeScore,
-          away_score: awayScore,
-          finished: finished
-        })
+        body: JSON.stringify({ home_score: homeScore, away_score: awayScore, finished })
       });
+
+
       if (!res.ok) throw new Error("Failed to update match");
       loadMatches();
     } catch (err) {
       errorDiv.textContent = err.message;
     }
   }
+
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
+
+
     const homeTeamId = Number(homeTeam.value);
     const awayTeamId = Number(awayTeam.value);
     const matchTime = matchTimeInput.value;
     const playoff = playoffSelect.value === "true";
+
+
     try {
       const res = await fetch("/api/matches", {
         method: "POST",
@@ -104,6 +171,8 @@
           playoff: playoff
         })
       });
+
+
       if (!res.ok) throw new Error("Failed to create match");
       form.reset();
       loadMatches();
@@ -111,10 +180,17 @@
       errorDiv.textContent = err.message;
     }
   });
+
+
   const homeTeam = document.getElementById("homeTeam");
   const awayTeam = document.getElementById("awayTeam");
   const matchTimeInput = document.getElementById("matchTime");
   const playoffSelect = document.getElementById("playoff");
+
+
+  loadTeams();
   loadMatches();
 </script>
+
+
 </body>
