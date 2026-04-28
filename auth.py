@@ -23,7 +23,7 @@ def verify_password(password: str, hash: str) -> bool:
 
 def create_access_token(user_id: int):
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "exp": datetime.utcnow() + timedelta(hours=8)
     }
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
@@ -38,7 +38,8 @@ def get_current_user(
         raise HTTPException(status_code=401)
 
     payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-    user = db.get(User, payload["sub"])
+    user_id = int(payload["sub"])
+    user = db.get(User, user_id)
 
     if not user:
         raise HTTPException(status_code=401)
