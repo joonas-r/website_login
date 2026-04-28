@@ -5,84 +5,116 @@
   <meta charset="UTF-8" />
   <title>Matches</title>
   <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; }
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; }
     h1, h2 { margin-bottom: 0.5rem; }
     ul { list-style: none; padding: 0; }
     li { border: 1px solid #ccc; padding: 0.5rem; margin-bottom: 0.5rem; }
     form { margin-top: 1rem; }
-    input, button { padding: 0.4rem; margin: 0.2rem 0; width: 100%; }
+    input, button, select { padding: 0.4rem; margin: 0.2rem 0; }
+    .row { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
     .error { color: red; margin: 0.5rem 0; }
   </style>
 </head>
 <body>
-  <h1>Matches</h1>
-  <div id="error" class="error"></div>
-  <ul id="matches"></ul>
-  <hr />
-  <h2>Add new match</h2>
 
-
-  <form id="matchForm">
+<h1>Matches</h1>
+<div id="error" class="error"></div>
+<ul id="matches"></ul>
+<hr />
+<h2>Add new match</h2>
+<form id="matchForm">
+  <div class="row">
     <input type="number" id="homeTeam" placeholder="Home team ID" required />
     <input type="number" id="awayTeam" placeholder="Away team ID" required />
-    <button type="submit">Create match</button>
-  </form>
-
-
-  <script>
-    const matchesList = document.getElementById("matches");
-    const errorDiv = document.getElementById("error");
-    const form = document.getElementById("matchForm");
-
-
-    async function loadMatches() {
-      errorDiv.textContent = "";
-      matchesList.innerHTML = "";
-
-
-      try {
-        const res = await fetch("/api/matches", { credentials: "include" });
-        if (!res.ok) throw new Error("Failed to load matches");
-
-
-        const matches = await res.json();
-
-
-        matches.forEach(m => {
-          const li = document.createElement("li");
-          li.textContent = `${m.home_team.team_name} ${m.home_score} – ${m.away_score} ${m.away_team.team_name}`;
-          matchesList.appendChild(li);
-        });
-      } catch (err) {
-        errorDiv.textContent = err.message;
-      }
+    <input type="time" id="matchTime" required />
+    <select id="playoff">
+      <option value="false">Regular</option>
+      <option value="true">Playoff</option>
+    </select>
+    <button type="submit">Create</button>
+  </div>
+</form>
+<script>
+  const matchesList = document.getElementById("matches");
+  const errorDiv = document.getElementById("error");
+  const form = document.getElementById("matchForm");
+  async function loadMatches() {
+    matchesList.innerHTML = "";
+    errorDiv.textContent = "";
+    try {
+      const res = await fetch("/api/matches", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load matches");
+      const matches = await res.json();
+      matches.forEach(m => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div><strong>${m.home_team.team_name}</strong> ${m.home_score} – ${m.away_score} <strong>${m.away_team.team_name}</strong></div>
+          <div class="row">
+            <input type="number" value="${m.home_score}" min="0" id="home-${m.match_id}" />
+            <input type="number" value="${m.away_score}" min="0" id="away-${m.match_id}" />
+            <label>
+              Finished
+              <input type="checkbox" id="finished-${m.match_id}" ${m.finished ? "checked" : ""} />
+            </label>
+            <button onclick="updateMatch(${m.match_id})">Update</button>
+          </div>
+        `;
+        matchesList.appendChild(li);
+      });
+    } catch (err) {
+      errorDiv.textContent = err.message;
     }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      errorDiv.textContent = "";
-
-      const homeTeamId = Number(document.getElementById("homeTeam").value);
-      const awayTeamId = Number(document.getElementById("awayTeam").value);
-      try {
-        const res = await fetch("/api/matches", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            home_team_id: homeTeamId,
-            away_team_id: awayTeamId
-          })
-        });
-        if (!res.ok) throw new Error("Failed to create match");
-
-        form.reset();
-        loadMatches();
-      } catch (err) {
-        errorDiv.textContent = err.message;
-      }
-    });
-    // Initial load
-    loadMatches();
-  </script>
-
+  }
+  async function updateMatch(matchId) {
+    const homeScore = Number(document.getElementById(`home-${matchId}`).value);
+    const awayScore = Number(document.getElementById(`away-${matchId}`).value);
+    const finished = document.getElementById(`finished-${matchId}`).checked;
+    try {
+      const res = await fetch(`/api/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          home_score: homeScore,
+          away_score: awayScore,
+          finished: finished
+        })
+      });
+      if (!res.ok) throw new Error("Failed to update match");
+      loadMatches();
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const homeTeamId = Number(homeTeam.value);
+    const awayTeamId = Number(awayTeam.value);
+    const matchTime = matchTimeInput.value;
+    const playoff = playoffSelect.value === "true";
+    try {
+      const res = await fetch("/api/matches", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          home_team_id: homeTeamId,
+          away_team_id: awayTeamId,
+          match_time: matchTime,
+          playoff: playoff
+        })
+      });
+      if (!res.ok) throw new Error("Failed to create match");
+      form.reset();
+      loadMatches();
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  });
+  const homeTeam = document.getElementById("homeTeam");
+  const awayTeam = document.getElementById("awayTeam");
+  const matchTimeInput = document.getElementById("matchTime");
+  const playoffSelect = document.getElementById("playoff");
+  loadMatches();
+</script>
+</body>
