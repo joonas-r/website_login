@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
-<script src="script.js"></script>
 </head>
 <body>
 <h1>Login page</h1>
@@ -10,5 +9,27 @@
     <input name="password" id="password" type="password">
     <input type="submit" value="Submit" onclick="userLogin()"> 
 </form>
-
+<br>
+<br>
+<h2><a href="/matches.html">Matches</a></h2>
+<h2><a href="/team_stats.html">Team stats</a></h2>
+<h2><a href="/player_stats.html">Player stats</a></h2>
 </body>
+
+<script>
+async function userLogin(){
+    var user = document.getElementById("username").value;
+    var pass = document.getElementById("password").value;
+    
+    // alert(username);
+    
+    fetch("/api/login", {
+        method: "POST",
+        body: JSON.stringify({
+        	username: user, 
+        	password: pass }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include"
+    });
+}
+</script>
