@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session, selectinload
 from auth import hash_password
 from models import User, Match, Team, Player, PlayerStats
-from schemas import CreateMatch, PatchMatchScore, PatchTeamStats, PatchPlayerStatsDelta
+from schemas import CreateMatch, PatchMatchScore, PatchTeamStats, PatchPlayerStats
 
 
 
@@ -87,19 +87,31 @@ def get_player_stats(
     return db.get(PlayerStats, player)
 
 
-def increment_player_stats(
+# def increment_player_stats(
+#     db: Session,
+#     stats: PlayerStats,
+#     delta: PatchPlayerStatsDelta,
+# ) -> PlayerStats:
+#     if delta.goals:
+#         stats.goals += delta.goals
+
+#     if delta.assists:
+#         stats.assists += delta.assists
+
+#     if delta.penalty_min:
+#         stats.penalty_min += delta.penalty_min
+
+#     db.commit()
+#     db.refresh(stats)
+#     return stats
+
+def update_player_stats(
     db: Session,
     stats: PlayerStats,
-    delta: PatchPlayerStatsDelta,
+    updates: PatchPlayerStats
 ) -> PlayerStats:
-    if delta.goals:
-        stats.goals += delta.goals
-
-    if delta.assists:
-        stats.assists += delta.assists
-
-    if delta.penalty_min:
-        stats.penalty_min += delta.penalty_min
+    for field, value in updates.model_dump(exclude_unset=True).items():
+        setattr(stats, field, value)
 
     db.commit()
     db.refresh(stats)
