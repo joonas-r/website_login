@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Player Stats</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 2rem auto; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    select, input, button { padding: 0.4rem; margin: 0.2rem; }
+    table { border-collapse: collapse; width: 100%; margin-top: 1rem; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem; text-align: center; }
+    th { background: #f0f0f0; }
+    .row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .error { color: red; margin: 0.5rem 0; }
+  </style>
+</head>
+<body>
+
+<h1>Player Stats</h1>
+<div id="error" class="error"></div>
+
+<h2>Select team</h2>
+<div class="row">
+  <select id="teamSelect"></select>
+  <button onclick="loadPlayers()">Load players</button>
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>#</th>
+      <th>Goals</th>
+      <th>Assists</th>
+      <th>Penalty min</th>
+      <th>Update</th>
+    </tr>
+  </thead>
+  <tbody id="players"></tbody>
+</table>
+
+<script>
+  const teamSelect = document.getElementById("teamSelect");
+  const playersBody = document.getElementById("players");
+  const errorDiv = document.getElementById("error");
+
+  async function loadTeams() {
+    try {
+      const res = await fetch("/api/teams", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load teams");
+      const teams = await res.json();
+
+      teams.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.team_id;
+        opt.textContent = `${t.team_name} (Group ${t.group ?? ""})`;
+        teamSelect.appendChild(opt);
+      });
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  async function loadPlayers() {
+    playersBody.innerHTML = "";
+    errorDiv.textContent = "";
+
+    const teamId = teamSelect.value;
+    if (!teamId) return;
+
+    try {
+      const res = await fetch(`/api/players/team/${teamId}`, { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load players");
+      const players = await res.json();
+
+      for (const p of players) {
+        const statsRes = await fetch(`/api/players/${p.player_id}/stats`, { credentials: "include" });
+        if (!statsRes.ok) throw new Error("Failed to load player stats");
+        const stats = await statsRes.json();
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${p.player_id}</td>
+          <td>${p.name}</td>
+          <td>${p.shirt_number}</td>
+          <td><input id="g-${p.player_id}" type="number" value="${stats.goals}" /></td>
+          <td><input id="a-${p.player_id}" type="number" value="${stats.assists}" /></td>
+          <td><input id="p-${p.player_id}" type="number" value="${stats.penalty_min}" /></td>
+          <td><button onclick="updateStats(${p.player_id})">Save</button></td>
+        `;
+        playersBody.appendChild(tr);
+      }
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  async function updateStats(playerId) {
+    const payload = {
+      goals: Number(document.getElementById(`g-${playerId}`).value),
+      assists: Number(document.getElementById(`a-${playerId}`).value),
+      penalty_min: Number(document.getElementById(`p-${playerId}`).value)
+    };
+
+    try {
+      const res = await fetch(`/api/players/${playerId}/stats`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Failed to update stats");
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  loadTeams();
+</script>
+
+</body>
+</html>
