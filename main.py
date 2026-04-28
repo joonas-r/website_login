@@ -16,7 +16,7 @@ app = FastAPI()
 
 matches_router = APIRouter(
     prefix="/matches",
-    tags="[matches]",
+    tags=["matches"],
     dependencies=[Depends(get_current_user)]
 )
 
