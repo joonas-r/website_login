@@ -15,22 +15,37 @@ async function userLogin(){
 }
 
 
-async function loadMatches() {
-  try {
-    const response = await fetch("/api/matches");
-    if (!response.ok) {
-      throw new Error("Failed to fetch matches");
-    }
-    const matches = await response.json();
-    return matches.json();
-  } catch (err) {
-    console.error(err);
-  }
+function makeTableMatches(matches) {
+	var table = document.getElementById("Matchtable");
+
+	matches.forEach(match => {
+		console.log(match)
+	})
+		 
+}
+
+function loadMatches() {
+	
+	fetch("/api/matches", {
+	  method: "GET",
+	})
+	  .then(response => {
+	    if (!response.ok) {
+	      throw new Error("Failed to fetch matches");
+	    }
+	    return response.json();
+	  })
+	  .then(matches => {
+	    makeTableMatches(matches);   
+	  })
+	  .catch(error => {
+	    console.error(error);
+	  });
 }
 
 
-async function getMatchesData() {
-        var table = document.getElementById("Matchtable")
-        const matchesJSON = loadMatches()
-        console.log(matchesJSON)
+function getMatchesData() {
+  
+        loadMatches();
+		
 }
