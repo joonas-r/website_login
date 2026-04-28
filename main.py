@@ -14,27 +14,27 @@ app = FastAPI()
 
 ## Routers
 
-matches_router = APIRouter(
-    prefix="/matches",
-    tags=["matches"],
-    dependencies=[Depends(get_current_user)]
-)
+# matches_router = APIRouter(
+#     prefix="/matches",
+#     tags=["matches"],
+#     dependencies=[Depends(get_current_user)]
+# )
 
-teams_router = APIRouter(
-    prefix="/teams",
-    tags=["teams"],
-    dependencies=[Depends(get_current_user)]
-)
+# teams_router = APIRouter(
+#     prefix="/teams",
+#     tags=["teams"],
+#     dependencies=[Depends(get_current_user)]
+# )
 
-players_router = APIRouter(
-    prefix="/players",
-    tags=["players"],
-    dependencies=[Depends(get_current_user)]
-)
+# players_router = APIRouter(
+#     prefix="/players",
+#     tags=["players"],
+#     dependencies=[Depends(get_current_user)]
+# )
 
-app.include_router(matches_router)
-app.include_router(teams_router)
-app.include_router(players_router)
+# app.include_router(matches_router)
+# app.include_router(teams_router)
+# app.include_router(players_router)
 
 Base.metadata.create_all(engine)
 
@@ -85,25 +85,27 @@ def create_user_route(
     return {"message": "User created"}
 
 
-@matches_router.get("", response_model=list[ReadMatches])
+@app.get("", response_model=list[ReadMatches])
 def read_matches(
     db: Session = Depends(get_db)
 ):
     return crud.get_all_matches(db)
 
-@matches_router.post("")
+@app.post("/match")
 def create_match_route(
     match: CreateMatch,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
 ):
     return crud.create_match(db, match)
 
 
-@matches_router.patch("/{match_id}", response_model=ReadMatches)
+@app.patch("/match/{match_id}", response_model=ReadMatches)
 def patch_match_score(
     match_id: int,
     updates: PatchMatchScore,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user)
 ):
     match = db.get(Match, match_id)
     if not match:
@@ -112,11 +114,11 @@ def patch_match_score(
     return crud.update_match_score(db, match, updates)
 
 
-@matches_router.delete("/{match_id}", status_code=204)
+@app.delete("/match/{match_id}", status_code=204)
 def delete_match(
     match_id: int,
     db: Session = Depends(get_db),
-    # user: User = Depends(get_current_user),  # auth protection
+    user: User = Depends(get_current_user)
 ):
     match = db.get(Match, match_id)
     if not match:
@@ -124,13 +126,13 @@ def delete_match(
 
     crud.delete_match(db, match)
 
-@teams_router.get("", response_model=list[ReadTeamStats])
+@app.get("/teams", response_model=list[ReadTeamStats])
 def read_teams(
     db: Session = Depends(get_db)
 ):
     return crud.get_all_team_stats(db)
 
-@teams_router.patch("/{team_id}", response_model=ReadTeamStats)
+@app.patch("/teams/{team_id}", response_model=ReadTeamStats)
 def patch_team_stats(
     team_id: int,
     updates: PatchTeamStats,
@@ -142,7 +144,7 @@ def patch_team_stats(
 
     return crud.update_team_stats(db, team, updates)
 
-@players_router.get("/team/{team_id}", response_model=list[ReadPlayerTeamInfo])
+@app.get("/players/team/{team_id}", response_model=list[ReadPlayerTeamInfo])
 def read_team_players(
     team_id: int,    
     db: Session = Depends(get_db)
@@ -159,7 +161,7 @@ def read_team_players(
         for p in players
     ]
 
-@players_router.get("/{player_id}/stats", response_model=ReadPlayerStats)
+@app.get("/players/{player_id}/stats", response_model=ReadPlayerStats)
 def read_player_stats(
     player_id: int,
     db: Session = Depends(get_db)
@@ -174,7 +176,7 @@ def read_player_stats(
     }
 
 
-@players_router.patch("/{player_id}/stats")
+@app.patch("/players/{player_id}/stats")
 def patch_player_stats(
     player_id: int,
     updates: PatchPlayerStats,
