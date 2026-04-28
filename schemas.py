@@ -9,12 +9,19 @@ class CreateUser(BaseModel):
 class LoginRequest(BaseModel):
     username: str
     password: str
-    
+
+class TeamRead(BaseModel):
+    team_id: int
+    team_name: str
+
+    class Config:
+        from_attributes = True
+
 class ReadMatches(BaseModel):
     match_id: int
     playoff: bool
-    home_team_id: int
-    away_team_id: int
+    home_team: TeamRead
+    away_team: TeamRead 
     home_score: int
     away_score: int
     match_time: str

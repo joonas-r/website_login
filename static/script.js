@@ -13,3 +13,24 @@ async function userLogin(){
         credentials: "include"
     });
 }
+
+
+async function loadMatches() {
+  try {
+    const response = await fetch("/api/matches");
+    if (!response.ok) {
+      throw new Error("Failed to fetch matches");
+    }
+    const matches = await response.json();
+    return matches.json();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+
+async function getMatchesData() {
+        var table = document.getElementById("Matchtable")
+        const matchesJSON = loadMatches()
+        console.log(matchesJSON)
+}

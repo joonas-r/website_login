@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from auth import hash_password
 from models import User, Match, Team, Player, PlayerStats
 from schemas import CreateMatch, PatchMatchScore, PatchTeamStats, PatchPlayerStatsDelta
@@ -6,7 +6,7 @@ from schemas import CreateMatch, PatchMatchScore, PatchTeamStats, PatchPlayerSta
 
 
 def get_user_by_name(db: Session, name: str):
-    return db.query(User).filter(User.username == name).first()
+    return (db.query(User).filter(User.username == name).first())
 
 
 def create_user(db: Session, username: str, password: str):
@@ -20,7 +20,14 @@ def create_user(db: Session, username: str, password: str):
     return user
 
 def get_all_matches(db: Session) -> list:
-    return db.query(Match).all()
+    return (
+        db.query(Match)
+        .options(
+            selectinload(Match.home_team),
+            selectinload(Match.away_team),
+        )
+        .all()
+        )
 
 def create_match(db: Session, match: CreateMatch) -> Match:
     db_match = Match(**match.model_dump())
