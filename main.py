@@ -15,19 +15,19 @@ app = FastAPI()
 ## Routers
 
 matches_router = APIRouter(
-    prefix="/matches",
+    prefix="/api/matches",
     tags=["matches"],
     dependencies=[Depends(get_current_user)]
 )
 
 teams_router = APIRouter(
-    prefix="/teams",
+    prefix="/api/teams",
     tags=["teams"],
     dependencies=[Depends(get_current_user)]
 )
 
 players_router = APIRouter(
-    prefix="/players",
+    prefix="/api/players",
     tags=["players"],
     dependencies=[Depends(get_current_user)]
 )
