@@ -1,0 +1,126 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Team Stats</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 1000px; margin: 2rem auto; }
+    h1, h2 { margin-bottom: 0.5rem; }
+    table { border-collapse: collapse; width: 100%; margin-bottom: 2rem; }
+    th, td { border: 1px solid #ccc; padding: 0.4rem; text-align: center; }
+    th { background: #f0f0f0; }
+    .group-title { margin-top: 2rem; }
+    .row { display: flex; gap: 0.3rem; justify-content: center; }
+    input { width: 4rem; }
+    button { padding: 0.3rem 0.6rem; }
+    .error { color: red; margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+
+<h1>Team Stats</h1>
+<div id="error" class="error"></div>
+
+<h2 class="group-title">Group A</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>W</th>
+      <th>D</th>
+      <th>L</th>
+      <th>G</th>
+      <th>GF</th>
+      <th>GA</th>
+      <th>Update</th>
+    </tr>
+  </thead>
+  <tbody id="groupA"></tbody>
+</table>
+
+<h2 class="group-title">Group B</h2>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>W</th>
+      <th>D</th>
+      <th>L</th>
+      <th>G</th>
+      <th>GF</th>
+      <th>GA</th>
+      <th>Update</th>
+    </tr>
+  </thead>
+  <tbody id="groupB"></tbody>
+</table>
+
+<script>
+  const errorDiv = document.getElementById("error");
+  const groupA = document.getElementById("groupA");
+  const groupB = document.getElementById("groupB");
+
+  async function loadTeams() {
+    errorDiv.textContent = "";
+    groupA.innerHTML = "";
+    groupB.innerHTML = "";
+
+    try {
+      const res = await fetch("/api/teams", { credentials: "include" });
+      if (!res.ok) throw new Error("Failed to load teams");
+      const teams = await res.json();
+
+      teams.forEach(t => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${t.team_id}</td>
+          <td>${t.team_name}</td>
+          <td><input id="w-${t.team_id}" type="number" value="${t.wins}" /></td>
+          <td><input id="d-${t.team_id}" type="number" value="${t.draws}" /></td>
+          <td><input id="l-${t.team_id}" type="number" value="${t.losses}" /></td>
+          <td><input id="g-${t.team_id}" type="number" value="${t.games}" /></td>
+          <td><input id="gf-${t.team_id}" type="number" value="${t.goals_for}" /></td>
+          <td><input id="ga-${t.team_id}" type="number" value="${t.goals_against}" /></td>
+          <td><button onclick="updateTeam(${t.team_id})">Save</button></td>
+        `;
+
+        if (t.group === "A") groupA.appendChild(tr);
+        else if (t.group === "B") groupB.appendChild(tr);
+      });
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  async function updateTeam(teamId) {
+    const payload = {
+      wins: Number(document.getElementById(`w-${teamId}`).value),
+      draws: Number(document.getElementById(`d-${teamId}`).value),
+      losses: Number(document.getElementById(`l-${teamId}`).value),
+      games: Number(document.getElementById(`g-${teamId}`).value),
+      goals_for: Number(document.getElementById(`gf-${teamId}`).value),
+      goals_against: Number(document.getElementById(`ga-${teamId}`).value)
+    };
+
+    try {
+      const res = await fetch(`/api/teams/${teamId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) throw new Error("Failed to update team");
+    } catch (err) {
+      errorDiv.textContent = err.message;
+    }
+  }
+
+  loadTeams();
+</script>
+
+</body>
+</html>
