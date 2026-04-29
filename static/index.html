@@ -92,10 +92,10 @@ async function registerUser() {
   const password = document.getElementById("reg-password").value;
 
   try {
-    const res = await fetch("/register", {
+    const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ "username": username, "password": password })
+      body: JSON.stringify({ username, password })
     });
 
     if (!res.ok) throw new Error("Registration failed");
