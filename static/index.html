@@ -95,7 +95,7 @@ async function registerUser() {
     const res = await fetch("/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, password })
+      body: JSON.stringify({ "username": username, "password": password })
     });
 
     if (!res.ok) throw new Error("Registration failed");
