@@ -1,35 +1,111 @@
 <!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 500px; margin: 3rem auto; }
+    h1 { margin-bottom: 1rem; }
+    label { display: block; margin-top: 0.8rem; }
+    input, button { width: 100%; padding: 0.5rem; margin-top: 0.3rem; }
+    button { cursor: pointer; }
+    .error { color: red; margin-top: 1rem; }
+    .links { margin-top: 2rem; }
+  </style>
 </head>
 <body>
-<h1>Login page</h1>
+
+<h1>Login</h1>
+
 <form onsubmit="return false;">
-    <input name="username" id="username">
-    <input name="password" id="password" type="password">
-    <input type="submit" value="Submit" onclick="userLogin()"> 
+  <label>
+    Username
+    <input id="username" autocomplete="username" />
+  </label>
+
+  <label>
+    Password
+    <input id="password" type="password" autocomplete="current-password" />
+  </label>
+
+  <button onclick="userLogin()">Login</button>
 </form>
-<br>
-<br>
-<h2><a href="/matches.html">Matches</a></h2>
-<h2><a href="/team_stats.html">Team stats</a></h2>
-<h2><a href="/player_stats.html">Player stats</a></h2>
-</body>
+
+<div class="error" id="error"></div>
+
+<div class="links">
+  <h2>Admin pages</h2>
+  <ul>
+    <li><a href="/matches.html">Matches</a></li>
+    <li><a href="/team_stats.html">Team stats</a></li>
+    <li><a href="/player_stats.html">Player stats</a></li>
+  </ul>
+</div>
+
+<hr />
+
+<h2>Register new user</h2>
+<form onsubmit="return false;">
+  <label>
+    Username
+    <input id="reg-username" />
+  </label>
+
+  <label>
+    Password
+    <input id="reg-password" type="password" />
+  </label>
+
+  <button onclick="registerUser()">Register</button>
+</form>
 
 <script>
-async function userLogin(){
-    var user = document.getElementById("username").value;
-    var pass = document.getElementById("password").value;
-    
-    // alert(username);
-    
-    fetch("/api/login", {
-        method: "POST",
-        body: JSON.stringify({
-        	username: user, 
-        	password: pass }),
-        headers: { "Content-Type": "application/json" },
-        credentials: "include"
+async function userLogin() {
+  const error = document.getElementById("error");
+  error.textContent = "";
+
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+
+  try {
+    const res = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ username, password })
     });
+
+    if (!res.ok) throw new Error("Invalid username or password");
+
+    // Redirect after successful login
+    window.location.href = "/matches.html";
+  } catch (err) {
+    error.textContent = err.message;
+  }
+}
+
+async function registerUser() {
+  const error = document.getElementById("error");
+  error.textContent = "";
+
+  const username = document.getElementById("reg-username").value;
+  const password = document.getElementById("reg-password").value;
+
+  try {
+    const res = await fetch("/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password })
+    });
+
+    if (!res.ok) throw new Error("Registration failed");
+
+    alert("User registered. You can now log in.");
+  } catch (err) {
+    error.textContent = err.message;
+  }
 }
 </script>
+
+</body>
+</html>
