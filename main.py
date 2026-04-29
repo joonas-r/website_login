@@ -73,16 +73,16 @@ def dashboard(user: User = Depends(get_current_user)):
 def logout(response: Response):
     response.delete_cookie("access_token")
 
-@app.post("/register", status_code=201)
-def create_user_route(
-    user: CreateUser,
-    db: Session = Depends(get_db)
-):
-    existing = crud.get_user_by_name(db, user.username)
-    if existing:
-        raise HTTPException(status_code=400, detail="Username already registered")
-    crud.create_user(db, user.username, user.password)
-    return {"message": "User created"}
+# @app.post("/register", status_code=201)
+# def create_user_route(
+#     user: CreateUser,
+#     db: Session = Depends(get_db)
+# ):
+#     existing = crud.get_user_by_name(db, user.username)
+#     if existing:
+#         raise HTTPException(status_code=400, detail="Username already registered")
+#     crud.create_user(db, user.username, user.password)
+#     return {"message": "User created"}
 
 
 @app.get("/matches", response_model=list[ReadMatches])
