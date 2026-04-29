@@ -56,7 +56,7 @@ def login(
         key="access_token",
         value=token,
         httponly=True,
-#        secure=True,     # HTTPS only
+        secure=True,     # HTTPS only
         samesite="lax",
         path="/"
     )
